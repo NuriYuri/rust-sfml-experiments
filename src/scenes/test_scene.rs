@@ -1,6 +1,25 @@
 use sfml::graphics::{Color, Text};
 
-use crate::helpers::{font_loader::Fonts, scene::Scene};
+use crate::helpers::{
+    font_loader::Fonts,
+    scene::{PreInitializedScene, Scene},
+};
+
+pub struct PreInitializedTestScene {}
+
+impl PreInitializedScene for PreInitializedTestScene {
+    fn init_graphics<'a: 'b, 'b>(&self, fonts: &'a Box<Fonts>) -> Box<dyn Scene<'a, 'a> + 'a> {
+        let text = Text::new("No last press", &fonts.main_font, 16);
+        return Box::new(TestScene {
+            last_wheel: 0.0,
+            frame_count: 0,
+            time_accu: 0.0,
+            fps: 0,
+            last_main_input: false,
+            graphics: TestSceneGraphics { text },
+        });
+    }
+}
 
 struct TestSceneGraphics<'a> {
     text: Text<'a>,
@@ -12,21 +31,10 @@ pub struct TestScene<'a> {
     time_accu: f32,
     fps: i32,
     last_main_input: bool,
-    graphics: Option<TestSceneGraphics<'a>>,
+    graphics: TestSceneGraphics<'a>,
 }
 
 impl TestScene<'_> {
-    pub fn new() -> Self {
-        return Self {
-            last_wheel: 0.0,
-            frame_count: 0,
-            time_accu: 0.0,
-            fps: 0,
-            last_main_input: false,
-            graphics: None,
-        };
-    }
-
     fn update_fps_state(&mut self) {
         if self.frame_count >= 60 {
             self.fps = (self.time_accu * self.frame_count as f32) as i32;
@@ -36,31 +44,22 @@ impl TestScene<'_> {
     }
 
     fn update_text(&mut self, main_input: bool, wheel: f32) {
-        if let Some(graphics) = &mut self.graphics {
-            graphics.text.set_string(
-                format!(
-                    "main: {:?} wheel: {:?} fps: {:?}",
-                    main_input, wheel, self.fps
-                )
-                .as_str(),
+        self.graphics.text.set_string(
+            format!(
+                "main: {:?} wheel: {:?} fps: {:?}",
+                main_input, wheel, self.fps
             )
-        }
+            .as_str(),
+        )
     }
 }
 
 impl<'a> Scene<'a, 'a> for TestScene<'a> {
-    fn init_graphics(&mut self, fonts: &'a Box<Fonts>) -> () {
-        let text = Text::new("No last press", &fonts.main_font, 16);
-        self.graphics = Some(TestSceneGraphics { text });
-    }
-
-    fn init_animation(&mut self) -> () {}
+    fn start_animations(&mut self) -> () {}
 
     fn draw(&self, surface: &mut dyn sfml::graphics::RenderTarget) -> () {
         surface.clear(Color::BLACK);
-        if let Some(graphics) = &self.graphics {
-            surface.draw(&graphics.text);
-        }
+        surface.draw(&self.graphics.text);
     }
 
     fn update_state(

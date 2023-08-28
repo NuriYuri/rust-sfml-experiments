@@ -4,8 +4,8 @@ pub mod scenes;
 use helpers::build_window::build_window;
 use helpers::font_loader;
 use helpers::input_state::InputState;
-use helpers::scene::Scene;
-use scenes::test_scene::TestScene;
+use helpers::scene::PreInitializedScene;
+use scenes::test_scene::PreInitializedTestScene;
 use sfml::system::Clock;
 use sfml::window::mouse::Button as MouseButton;
 use sfml::window::{Event, Scancode};
@@ -14,7 +14,7 @@ fn main() {
     let mut window = build_window("test", 640, 360);
     let fonts = font_loader::load_fonts();
     let mut input_state = InputState::new();
-    let mut scene = TestScene::new();
+    let preinit_scene = PreInitializedTestScene {};
     let mut clock = Clock::start();
     let mut last_delta_time: f32 = 0.0;
 
@@ -22,7 +22,7 @@ fn main() {
     input_state.load_scan_code_mapping(Scancode::Enter, 0);
     input_state.load_mouse_button_mapping(MouseButton::Left, 0);
 
-    scene.init_graphics(&fonts);
+    let mut scene = preinit_scene.init_graphics(&fonts);
 
     while window.is_open() {
         scene.draw(&mut window);
