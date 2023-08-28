@@ -1,0 +1,18 @@
+{
+  "rust-analyzer.linkedProjects": [
+    ".\\Cargo.toml"
+  ],
+  "rust-analyzer.showUnlinkedFileNotification": false,
+  "cSpell.words": [
+    "scancode",
+    "SFML"
+  ],
+  "rust-analyzer.cargo.extraEnv": {
+    "SFML_INCLUDE_DIR": "${workspaceFolder}\\deps\\SFML-2.6.0\\include",
+    "SFML_LIBS_DIR": "${workspaceFolder}\\deps\\SFML-2.6.0\\lib"
+  },
+  "rust-analyzer.runnables.extraEnv": {
+    "SFML_INCLUDE_DIR": "${workspaceFolder}\\deps\\SFML-2.6.0\\include",
+    "SFML_LIBS_DIR": "${workspaceFolder}\\deps\\SFML-2.6.0\\lib"
+  }
+}
