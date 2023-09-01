@@ -1,14 +1,16 @@
-use sfml::graphics::{Color, RcText};
+use sfml::graphics::RcText;
 
 use crate::helpers::{
     font_loader::LoadedFonts,
-    scene::{PreInitializedScene, Scene},
+    scene::{PreInitializedScene, Scene, UpdateSceneResult},
 };
+
+use super::test_scene_deep::PreInitializedTestSceneDeep;
 
 pub struct PreInitializedTestScene {}
 
 impl PreInitializedScene for PreInitializedTestScene {
-    fn init_graphics(&self, fonts: LoadedFonts) -> Box<dyn Scene> {
+    fn init_graphics(&self, fonts: LoadedFonts, _: Option<Box<dyn Scene>>) -> Box<dyn Scene> {
         let text = RcText::new("No last press", &(fonts.borrow_mut().main_font), 16);
         return Box::new(TestScene {
             last_wheel: 0.0,
@@ -25,7 +27,7 @@ struct TestSceneGraphics {
     text: RcText,
 }
 
-pub struct TestScene {
+struct TestScene {
     last_wheel: f32,
     frame_count: i32,
     time_accu: f32,
@@ -58,7 +60,6 @@ impl Scene for TestScene {
     fn start_animations(&mut self) -> () {}
 
     fn draw(&self, surface: &mut dyn sfml::graphics::RenderTarget) -> () {
-        surface.clear(Color::BLACK);
         surface.draw(&self.graphics.text);
     }
 
@@ -67,7 +68,7 @@ impl Scene for TestScene {
         input_state: &crate::helpers::input_state::InputState,
         delta_time: f32,
         _: f32,
-    ) -> () {
+    ) -> UpdateSceneResult {
         let main_input = input_state.get_key_state(0);
         let wheel = input_state.get_wheel_delta();
         self.update_fps_state();
@@ -78,5 +79,11 @@ impl Scene for TestScene {
         self.last_wheel = wheel;
         self.frame_count += 1;
         self.time_accu += delta_time;
+        if input_state.get_key_state(2) {
+            return UpdateSceneResult::SwitchToPreInitializedScene(Box::new(
+                PreInitializedTestSceneDeep {},
+            ));
+        }
+        return UpdateSceneResult::Continue;
     }
 }

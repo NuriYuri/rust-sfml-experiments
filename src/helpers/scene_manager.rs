@@ -13,7 +13,7 @@ use super::{
     build_window::build_window,
     font_loader::{load_fonts, LoadedFonts},
     input_state::InputState,
-    scene::{PreInitializedScene, Scene},
+    scene::{PreInitializedScene, Scene, UpdateSceneResult, VoidScene},
 };
 
 pub struct SceneManager {
@@ -36,7 +36,7 @@ impl SceneManager {
             input_state: InputState::new(),
             clock: Clock::start(),
             last_delta_time: 0.0,
-            current_scene: (PreInitializedTestScene {}).init_graphics(Rc::clone(&fonts)),
+            current_scene: (PreInitializedTestScene {}).init_graphics(Rc::clone(&fonts), None),
         };
     }
 
@@ -63,9 +63,26 @@ impl SceneManager {
     }
 
     fn update_scene(&mut self, delta_time: f32) -> () {
-        self.current_scene
-            .update_state(&self.input_state, delta_time, self.last_delta_time);
+        let mut update_result =
+            self.current_scene
+                .update_state(&self.input_state, delta_time, self.last_delta_time);
         self.last_delta_time = delta_time;
+        self.handler_scene_switch(&mut update_result);
+    }
+
+    fn handler_scene_switch(&mut self, update_result: &mut UpdateSceneResult) {
+        match update_result {
+            UpdateSceneResult::Continue => {}
+            UpdateSceneResult::SwitchToPreInitializedScene(next_scene) => {
+                let mut previous_scene: Box<dyn Scene> = Box::new(VoidScene {});
+                std::mem::swap(&mut previous_scene, &mut self.current_scene);
+                self.current_scene =
+                    next_scene.init_graphics(Rc::clone(&self.fonts), Some(previous_scene));
+            }
+            UpdateSceneResult::SwitchToExistingScene(next_scene) => {
+                std::mem::swap(next_scene, &mut self.current_scene);
+            }
+        }
     }
 
     fn update_input_state(&mut self) {

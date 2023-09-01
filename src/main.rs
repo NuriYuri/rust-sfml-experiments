@@ -14,6 +14,12 @@ fn main() {
     scene_manager
         .temp_get_input_state()
         .load_mouse_button_mapping(MouseButton::Left, 0);
+    scene_manager
+        .temp_get_input_state()
+        .load_scan_code_mapping(Scancode::Escape, 1);
+    scene_manager
+        .temp_get_input_state()
+        .load_scan_code_mapping(Scancode::Space, 2);
 
     while scene_manager.is_running() {
         scene_manager.update();

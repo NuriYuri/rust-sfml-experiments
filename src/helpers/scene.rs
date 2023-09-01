@@ -8,7 +8,11 @@ use super::{font_loader::LoadedFonts, input_state::InputState};
 ///
 /// Note: PreInitializedScene can carry arguments for the scene (eg. which entity it is about)
 pub trait PreInitializedScene {
-    fn init_graphics(&self, fonts: LoadedFonts) -> Box<dyn Scene>;
+    fn init_graphics(
+        &self,
+        fonts: LoadedFonts,
+        previous_scene: Option<Box<dyn Scene>>,
+    ) -> Box<dyn Scene>;
 }
 
 /// Trait describing a game scene.
@@ -34,5 +38,20 @@ pub trait Scene {
         input_state: &InputState,
         delta_time: f32,
         last_delta_time: f32,
-    ) -> ();
+    ) -> UpdateSceneResult;
+}
+
+pub struct VoidScene {}
+impl Scene for VoidScene {
+    fn start_animations(&mut self) -> () {}
+    fn draw(&self, _: &mut dyn RenderTarget) -> () {}
+    fn update_state(&mut self, _: &InputState, _: f32, _: f32) -> UpdateSceneResult {
+        UpdateSceneResult::Continue
+    }
+}
+
+pub enum UpdateSceneResult {
+    Continue,
+    SwitchToPreInitializedScene(Box<dyn PreInitializedScene>),
+    SwitchToExistingScene(Box<dyn Scene>),
 }
