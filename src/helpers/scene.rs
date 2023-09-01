@@ -1,6 +1,6 @@
 use sfml::graphics::RenderTarget;
 
-use super::{font_loader::Fonts, input_state::InputState};
+use super::{font_loader::LoadedFonts, input_state::InputState};
 
 /// Trait describing a scene that is schedule-able for as next scene  but needs its graphics to be initialized
 ///
@@ -8,10 +8,7 @@ use super::{font_loader::Fonts, input_state::InputState};
 ///
 /// Note: PreInitializedScene can carry arguments for the scene (eg. which entity it is about)
 pub trait PreInitializedScene {
-    fn init_graphics<'lifetime: 'b, 'b>(
-        &self,
-        fonts: &'lifetime Box<Fonts>,
-    ) -> Box<dyn Scene<'lifetime, 'lifetime> + 'lifetime>;
+    fn init_graphics(&self, fonts: LoadedFonts) -> Box<dyn Scene>;
 }
 
 /// Trait describing a game scene.
@@ -24,9 +21,7 @@ pub trait PreInitializedScene {
 /// 3. loop
 ///    1. update_state (update the state of the scene)
 ///    2. draw (draw the sprites of the scene based on the state)
-///
-/// Note: the scene is responsive of calling clear on the surface
-pub trait Scene<'lifetime: 'b, 'b> {
+pub trait Scene {
     fn start_animations(&mut self) -> ();
     fn draw(&self, surface: &mut dyn RenderTarget) -> ();
     /// Update the state based on inputs

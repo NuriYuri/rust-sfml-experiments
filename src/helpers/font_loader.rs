@@ -1,11 +1,15 @@
-use sfml::{graphics::Font, SfBox};
+use std::{cell::RefCell, rc::Rc};
+
+use sfml::graphics::RcFont;
 
 pub struct Fonts {
-    pub main_font: SfBox<Font>,
+    pub main_font: RcFont,
 }
 
-pub fn load_fonts() -> Box<Fonts> {
-    let main_font = Font::from_file("assets/fonts/PublicSans-Regular.ttf")
+pub type LoadedFonts = Rc<RefCell<Fonts>>;
+
+pub fn load_fonts() -> LoadedFonts {
+    let main_font = RcFont::from_file("assets/fonts/PublicSans-Regular.ttf")
         .unwrap_or_else(|| panic!("Failed to load PublicSans-Regular Font"));
-    return Box::new(Fonts { main_font });
+    return Rc::new(RefCell::new(Fonts { main_font }));
 }

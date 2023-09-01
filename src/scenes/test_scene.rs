@@ -1,15 +1,15 @@
-use sfml::graphics::{Color, Text};
+use sfml::graphics::{Color, RcText};
 
 use crate::helpers::{
-    font_loader::Fonts,
+    font_loader::LoadedFonts,
     scene::{PreInitializedScene, Scene},
 };
 
 pub struct PreInitializedTestScene {}
 
 impl PreInitializedScene for PreInitializedTestScene {
-    fn init_graphics<'a: 'b, 'b>(&self, fonts: &'a Box<Fonts>) -> Box<dyn Scene<'a, 'a> + 'a> {
-        let text = Text::new("No last press", &fonts.main_font, 16);
+    fn init_graphics(&self, fonts: LoadedFonts) -> Box<dyn Scene> {
+        let text = RcText::new("No last press", &(fonts.borrow_mut().main_font), 16);
         return Box::new(TestScene {
             last_wheel: 0.0,
             frame_count: 0,
@@ -21,20 +21,20 @@ impl PreInitializedScene for PreInitializedTestScene {
     }
 }
 
-struct TestSceneGraphics<'a> {
-    text: Text<'a>,
+struct TestSceneGraphics {
+    text: RcText,
 }
 
-pub struct TestScene<'a> {
+pub struct TestScene {
     last_wheel: f32,
     frame_count: i32,
     time_accu: f32,
     fps: i32,
     last_main_input: bool,
-    graphics: TestSceneGraphics<'a>,
+    graphics: TestSceneGraphics,
 }
 
-impl TestScene<'_> {
+impl TestScene {
     fn update_fps_state(&mut self) {
         if self.frame_count >= 60 {
             self.fps = (self.time_accu * self.frame_count as f32) as i32;
@@ -54,7 +54,7 @@ impl TestScene<'_> {
     }
 }
 
-impl<'a> Scene<'a, 'a> for TestScene<'a> {
+impl Scene for TestScene {
     fn start_animations(&mut self) -> () {}
 
     fn draw(&self, surface: &mut dyn sfml::graphics::RenderTarget) -> () {
